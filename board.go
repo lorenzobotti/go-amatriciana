@@ -22,23 +22,19 @@ const (
 	Black = 0x20
 )
 
-var fenPieces map[rune]Piece
-
-func init() {
-	fenPieces = map[rune]Piece{
-		'p': Pawn | Black,
-		'n': Knight | Black,
-		'b': Bishop | Black,
-		'r': Rook | Black,
-		'q': Queen | Black,
-		'k': King | Black,
-		'P': Pawn | White,
-		'N': Knight | White,
-		'B': Bishop | White,
-		'R': Rook | White,
-		'Q': Queen | White,
-		'K': King | White,
-	}
+var fenPieces = map[rune]Piece{
+	'p': Pawn | Black,
+	'n': Knight | Black,
+	'b': Bishop | Black,
+	'r': Rook | Black,
+	'q': Queen | Black,
+	'k': King | Black,
+	'P': Pawn | White,
+	'N': Knight | White,
+	'B': Bishop | White,
+	'R': Rook | White,
+	'Q': Queen | White,
+	'K': King | White,
 }
 
 //Board represents a chessboard using the 0x88 method
@@ -69,7 +65,7 @@ func BoardFromFEN(fen string) (Board, error) {
 
 			piece, isItAPiece := fenPieces[letter]
 			if isItAPiece {
-				output[rankIdx*16+currentFile] = piece
+				output[(7-rankIdx)*16+currentFile] = piece
 				currentFile++
 			} else {
 				return Board{}, errors.New("not a piece something's wrong here")

@@ -1,7 +1,6 @@
 package amatriciana
 
 import (
-	"fmt"
 	"testing"
 )
 
@@ -24,12 +23,11 @@ func TestMovesInDirection(t *testing.T) {
 
 	moves := board.MovesInDirection(16, 16)
 
-	for _, move := range moves {
+	/*for _, move := range moves {
 		file, rank := move.To.Coords()
-		fmt.Printf("file: %d, rank: %d\n", file, rank)
-	}
+		fmt.Printf("file: %d, rank: %d\n", file+1, rank+1)
+	}*/
 	if len(moves) != 5 {
-		fmt.Println("moves: ", len(moves))
 		t.Fail()
 	}
 }
