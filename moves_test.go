@@ -1,8 +1,17 @@
 package amatriciana
 
 import (
+	"log"
 	"testing"
 )
+
+func TestXyFromString(t *testing.T) {
+	coord := XyFromString("e4")
+	if coord != 0x34 {
+		log.Fatalf("expected e4, found %#2x", coord)
+		t.Fail()
+	}
+}
 
 func TestSlidingMoves(t *testing.T) {
 	b, err := BoardFromFEN(DefaultFEN)
@@ -13,13 +22,13 @@ func TestSlidingMoves(t *testing.T) {
 	b[0x40|0x04] = White | Rook
 	b[0x30|0x03] = White | Bishop
 
-	moves, err := b.slidingMoves(0x40 | 0x04)
-	if err != nil || len(moves) != 11 {
+	moves := b.slidingMoves(0x40 | 0x04)
+	if len(moves) != 11 {
 		t.Fail()
 	}
 
-	moves, err = b.slidingMoves(0x30 | 0x03)
-	if err != nil || len(moves) != 5 {
+	moves = b.slidingMoves(0x30 | 0x03)
+	if len(moves) != 5 {
 		t.Fail()
 	}
 }
@@ -31,8 +40,8 @@ func TestCrawlingMoves(t *testing.T) {
 	}
 
 	b[0x30|0x03] = White | Knight
-	moves, err := b.crawlingMoves(0x30 | 0x03)
-	if err != nil || len(moves) != 6 {
+	moves := b.crawlingMoves(0x30 | 0x03)
+	if len(moves) != 6 {
 		t.Fail()
 	}
 }
@@ -43,7 +52,8 @@ func TestIsSquareAttacked(t *testing.T) {
 		t.Fail()
 	}
 
-	if !b.IsSquareAttacked(0x41, 0x23) {
+	if !b.isSquareAttacked(XyFromString("b5"), XyFromString("d3")) {
+		log.Fatalf("isSquareAttacked(square, by): b5 is not attacked by the queen on d3")
 		t.Fail()
 	}
 }

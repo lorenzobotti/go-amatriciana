@@ -1,10 +1,5 @@
 package amatriciana
 
-import (
-	"errors"
-	"fmt"
-)
-
 //Xy represents a coordinate. The four most significant bits are the file and
 //the four least significant bits are the row
 type Xy byte
@@ -14,6 +9,15 @@ func (a Xy) Coords() (file byte, rank byte) {
 	file = byte(a) & 0xf0 >> 4
 	rank = byte(a) & 0x0f
 	return
+}
+
+//XyFromString generates an Xy from a string like "e4" or "d6"
+func XyFromString(input string) Xy {
+	inputBytes := []byte(input)
+
+	rank := (inputBytes[0] - 'a')
+	file := (inputBytes[1] - '1') << 4
+	return Xy(rank | file)
 }
 
 //Move is a move.
@@ -44,18 +48,30 @@ func (b Board) MovesInDirection(start Xy, dir byte) []Move {
 	return output
 }
 
-var (
-	ErrNotSliding  = errors.New("not a sliding piece")
-	ErrNotCrawling = errors.New("not a crawling piece")
-)
+/*
+func (b Board) generateMoves(color Piece) {
+	pawnsDirection := 16
+	if color == Black {
+		pawnsDirection = -16
+	}
+
+	moves := make([]Move, 0, 32)
+	for _, piece := range b {
+		if (piece & 0xf0) != color {
+			continue
+		}
+
+	}
+}
+*/
 
 //todo: forse SlidingMoves() e CrawlingMoves() non devono riportare un errore?
 //todo: e non devono neanche essere esportate, no?
-func (b Board) slidingMoves(start Xy) ([]Move, error) {
+func (b Board) slidingMoves(start Xy) []Move {
 	startPiece := b[start]
 	directions, isSliding := slidingPieceDirections[startPiece&0x0f]
 	if !isSliding {
-		return nil, ErrNotSliding
+		return nil
 	}
 
 	output := make([]Move, 0)
@@ -63,13 +79,13 @@ func (b Board) slidingMoves(start Xy) ([]Move, error) {
 		output = append(output, b.MovesInDirection(start, byte(dir))...)
 	}
 
-	return output, nil
+	return output
 }
 
-func (b Board) crawlingMoves(start Xy) ([]Move, error) {
+func (b Board) crawlingMoves(start Xy) []Move {
 	directions, isCrawling := crawlingPieceDirections[b[start]&0x0f]
 	if !isCrawling {
-		return nil, ErrNotCrawling
+		return nil
 	}
 	output := make([]Move, 0)
 	for _, dir := range directions {
@@ -83,21 +99,32 @@ func (b Board) crawlingMoves(start Xy) ([]Move, error) {
 		}
 	}
 
-	return output, nil
+	return output
 }
 
-func (b Board) IsSquareAttacked(square Xy, by Xy) bool {
-	attackDelta := by - square
-	attackerType := pieceToBitflag[Piece(by&0xf) + 128]
+func (b Board) isSquareAttacked(square Xy, by Xy) bool {
+	attackDelta := (by - square) + 128
+	attackerType := pieceToBitflag[Piece(by&0xf)]
 
 	if attackingDeltas[attackDelta]&attackerType != 0 {
 		return true
 	}
 
-	fmt.Printf("delta: %#2x\n", attackingDeltas[attackDelta])
-	fmt.Printf("attacker type: %#2x\n", attackerType)
+	/*debugPrintf("raw delta: %d", attackDelta)
+	debugPrintf("delta: %#2x", attackingDeltas[attackDelta])
+	debugPrintf("attacker type: %#2x", attackerType)*/
 
 	return false
+}
+
+func isPieceSliding(input Piece) bool {
+	actualPiece := input & 0x0f
+	return actualPiece == Rook || actualPiece == Bishop || actualPiece == Queen
+}
+
+func isPieceCrawling(input Piece) bool {
+	actualPiece := input & 0x0f
+	return actualPiece == Knight || actualPiece == King
 }
 
 //todo: il fatto che questi sono int8 ma il resto del codice usa byte rompe un pò le palle
@@ -159,6 +186,6 @@ func init() {
 	}
 
 	/*for i, delta := range attackingDeltas {
-		fmt.Printf("%d: %#2x\n", i, delta)
+		debugPrintf("%d: %#2x", i, delta)
 	}*/
 }
