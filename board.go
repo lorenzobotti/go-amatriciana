@@ -2,6 +2,7 @@ package amatriciana
 
 import (
 	"errors"
+	"strconv"
 	"strings"
 )
 
@@ -41,8 +42,25 @@ var fenPieces = map[rune]Piece{
 //https://www.chessprogramming.org/0x88
 type Board [128]Piece
 
+//Position represents everything contained in a FEN string
+type Position struct {
+	board          Board
+	turn           Piece
+	whiteCanCastle [2]bool
+	blackCanCastle [2]bool
+	moveNumber     int
+	halfMoveNumber int
+	enPassant      Xy
+}
+
 //DefaultFEN is the default FEN
 const DefaultFEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+
+var (
+	ErrFENParamNumber = errors.New("invalid number of parameters in FEN string")
+	ErrNotAFENPiece   = errors.New("not a valid FEN piece, number or slash")
+	ErrNotAFENColor   = errors.New("the color in the FEN string is not 'w' or 'b'")
+)
 
 //BoardFromFEN makes a Board from a FEN
 func BoardFromFEN(fen string) (Board, error) {
@@ -68,9 +86,54 @@ func BoardFromFEN(fen string) (Board, error) {
 				output[(7-rankIdx)*16+currentFile] = piece
 				currentFile++
 			} else {
-				return Board{}, errors.New("not a piece something's wrong here")
+				return Board{}, ErrNotAFENPiece
 			}
 		}
+	}
+
+	return output, nil
+}
+
+//PositionFromFEN makes a Position from a FEN
+func PositionFromFEN(fen string) (Position, error) {
+	output := Position{}
+
+	elements := strings.Split(fen, " ")
+	if len(elements) != 6 {
+		return Position{}, ErrFENParamNumber
+	}
+
+	board, err := BoardFromFEN(fen)
+	if err != nil {
+		return Position{}, err
+	}
+	output.board = board
+
+	if elements[1] == "w" {
+		output.turn = White
+	} else if elements[1] == "b" {
+		output.turn = Black
+	} else {
+		return output, ErrNotAFENColor
+	}
+
+	output.whiteCanCastle[0] = stringContains(elements[2], 'K')
+	output.whiteCanCastle[1] = stringContains(elements[2], 'Q')
+	output.blackCanCastle[0] = stringContains(elements[2], 'k')
+	output.blackCanCastle[1] = stringContains(elements[2], 'q')
+
+	if elements[3] != "-" {
+		output.enPassant = XyFromString(elements[3])
+	}
+
+	output.moveNumber, err = strconv.Atoi(elements[4])
+	if err != nil {
+		return output, err
+	}
+
+	output.halfMoveNumber, err = strconv.Atoi(elements[4])
+	if err != nil {
+		return output, err
 	}
 
 	return output, nil
