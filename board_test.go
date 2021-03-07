@@ -36,7 +36,7 @@ func TestMovesInDirection(t *testing.T) {
 		t.Fail()
 	}
 
-	moves := board.MovesInDirection(16, 16)
+	moves := board.movesInDirection(16, 16)
 
 	if len(moves) != 5 {
 		t.Fail()

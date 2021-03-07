@@ -5,18 +5,25 @@ package amatriciana
 type Xy byte
 
 //Coords separates the file and the rank bits
-func (a Xy) Coords() (file byte, rank byte) {
-	file = byte(a) & 0xf0 >> 4
-	rank = byte(a) & 0x0f
+func (x Xy) Coords() (file byte, rank byte) {
+	file = byte(x) & 0x0f
+	rank = byte(x) & 0xf0 >> 4
 	return
+}
+
+func (x Xy) String() string {
+	file, rank := x.Coords()
+	fileLetter := file + 'a'
+	rankLetter := rank + '1'
+	return string([]byte{fileLetter, rankLetter})
 }
 
 //XyFromString generates an Xy from a string like "e4" or "d6"
 func XyFromString(input string) Xy {
 	inputBytes := []byte(input)
 
-	rank := (inputBytes[0] - 'a')
-	file := (inputBytes[1] - '1') << 4
+	rank := byte(inputBytes[0] - 'a')
+	file := byte(inputBytes[1]-'1') << 4
 	return Xy(rank | file)
 }
 
@@ -25,12 +32,51 @@ type Move struct {
 	From, To Xy
 }
 
-//MovesInDirection Generates all the moves possible in a certain direction from a starting point
-//It stops when it reaches the edge of the board or another piece (if it's a piece of the opposite color,
-//it also adds a capture)
+//for now it's just a proof of concept, no checking for checks, no pawn moves or promotion, no en passant
+func (p Position) generateMoves() []Move {
+	pawnsDirection := 16
+	pawnsRank := 1
+	if p.turn == Black {
+		pawnsDirection = -16
+		pawnsRank = 6
+	}
+	_ = pawnsDirection
 
-//no references yet
-func (b Board) MovesInDirection(start Xy, dir byte) []Move {
+	moves := make([]Move, 0, 32)
+	for square, piece := range p.board {
+		if (piece & 0xf0) != p.turn {
+			continue
+		}
+
+		//check if the square right in front is occupied or not
+		if (square+pawnsDirection)&0x88 == 0 && p.board[square+pawnsDirection] == 0 {
+			//debugPrintf("pawn can move to %s", Xy(square+pawnsDirection).String())
+			moves = append(moves, Move{Xy(square), Xy(square + pawnsDirection)})
+
+			//if the pawn is in the initial position it can move two squares
+			if (square&0xf0)>>4 == pawnsRank && p.board[square+(pawnsDirection*2)] == 0 {
+				//debugPrintf("pawn can move to %s", Xy(square+(pawnsDirection)*2).String())
+				moves = append(moves, Move{Xy(square), Xy(square + (pawnsDirection * 2))})
+			}
+		}
+
+		if (piece & 0x0f) == Pawn {
+			continue
+		}
+
+		if isPieceSliding(piece) {
+			moves = append(moves, p.board.slidingMoves(Xy(square))...)
+		}
+
+		if isPieceCrawling(piece) {
+			moves = append(moves, p.board.crawlingMoves(Xy(square))...)
+		}
+	}
+
+	return moves
+}
+
+func (b Board) movesInDirection(start Xy, dir byte) []Move {
 	startPiece := b[start]
 	output := make([]Move, 0)
 
@@ -48,25 +94,6 @@ func (b Board) MovesInDirection(start Xy, dir byte) []Move {
 	return output
 }
 
-/*
-func (b Board) generateMoves(color Piece) {
-	pawnsDirection := 16
-	if color == Black {
-		pawnsDirection = -16
-	}
-
-	moves := make([]Move, 0, 32)
-	for _, piece := range b {
-		if (piece & 0xf0) != color {
-			continue
-		}
-
-	}
-}
-*/
-
-//todo: forse SlidingMoves() e CrawlingMoves() non devono riportare un errore?
-//todo: e non devono neanche essere esportate, no?
 func (b Board) slidingMoves(start Xy) []Move {
 	startPiece := b[start]
 	directions, isSliding := slidingPieceDirections[startPiece&0x0f]
@@ -75,8 +102,9 @@ func (b Board) slidingMoves(start Xy) []Move {
 	}
 
 	output := make([]Move, 0)
+
 	for _, dir := range directions {
-		output = append(output, b.MovesInDirection(start, byte(dir))...)
+		output = append(output, b.movesInDirection(start, byte(dir))...)
 	}
 
 	return output
@@ -116,6 +144,12 @@ func (b Board) isSquareAttacked(square Xy, by Xy) bool {
 
 	return false
 }
+
+//this part is useless, for now
+//in the pursuit of fast prototyping, i have decided that
+//this will be a king-in-check engine (for now!)
+//this is because there are many more optimization decisions i have to make
+//and having a full working engine will let me experiment more freely
 
 func isPieceSliding(input Piece) bool {
 	actualPiece := input & 0x0f

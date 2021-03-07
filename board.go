@@ -38,6 +38,15 @@ var fenPieces = map[rune]Piece{
 	'K': King | White,
 }
 
+var pieceString = map[Piece]string{
+	Pawn:   "Pawn",
+	Knight: "Knight",
+	Bishop: "Bishop",
+	Rook:   "Rook",
+	Queen:  "Queen",
+	King:   "King",
+}
+
 //Board represents a chessboard using the 0x88 method
 //https://www.chessprogramming.org/0x88
 type Board [128]Piece

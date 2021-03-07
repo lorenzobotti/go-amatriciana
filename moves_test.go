@@ -5,12 +5,36 @@ import (
 	"testing"
 )
 
-func TestXyFromString(t *testing.T) {
-	coord := XyFromString("e4")
-	if coord != 0x34 {
-		log.Fatalf("expected e4, found %#2x", coord)
+func TestGenerateMoves(t *testing.T) {
+	position, err := PositionFromFEN(DefaultFEN)
+	if err != nil {
 		t.Fail()
 	}
+
+	moves := position.generateMoves()
+	//not counting pawn moves yet
+	if len(moves) != 4 {
+		debugPrintf("expected %d moves, found %d\n", 4, len(moves))
+		t.Fail()
+	}
+
+	position, err = PositionFromFEN("rnbqkbnr/pppp1ppp/8/4p3/4P3/8/PPPP1PPP/RNBQKBNR w KQkq - 0 2")
+	if err != nil {
+		t.Fail()
+	}
+
+	moves = position.generateMoves()
+	//not counting pawn moves yet
+	if len(moves) != 15 {
+		debugPrintf("expected %d moves, found %d\n", 15, len(moves))
+		t.Fail()
+	}
+
+	/*for i, move := range moves {
+		pieceMoved := position.board[move.From]
+		log.Printf("%d: %s to %s", i+1, pieceString[pieceMoved&0x0f], move.To.String())
+	}*/
+
 }
 
 func TestSlidingMoves(t *testing.T) {
