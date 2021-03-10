@@ -10,3 +10,27 @@ func stringContains(rawInput string, contains rune) bool {
 
 	return false
 }
+
+func maxFloat(inputs ...float64) float64 {
+	max := inputs[0]
+
+	for _, num := range inputs {
+		if num > max {
+			max = num
+		}
+	}
+
+	return max
+}
+
+func minFloat(inputs ...float64) float64 {
+	min := inputs[0]
+
+	for _, num := range inputs {
+		if num < min {
+			min = num
+		}
+	}
+
+	return min
+}

@@ -13,8 +13,8 @@ func TestGenerateMoves(t *testing.T) {
 
 	moves := position.generateMoves()
 	//not counting pawn moves yet
-	if len(moves) != 4 {
-		debugPrintf("expected %d moves, found %d\n", 4, len(moves))
+	if len(moves) != 20 {
+		debugPrintf("expected %d moves, found %d\n", 20, len(moves))
 		t.Fail()
 	}
 
@@ -25,8 +25,8 @@ func TestGenerateMoves(t *testing.T) {
 
 	moves = position.generateMoves()
 	//not counting pawn moves yet
-	if len(moves) != 15 {
-		debugPrintf("expected %d moves, found %d\n", 15, len(moves))
+	if len(moves) != 29 {
+		debugPrintf("expected %d moves, found %d\n", 29, len(moves))
 		t.Fail()
 	}
 
@@ -35,6 +35,20 @@ func TestGenerateMoves(t *testing.T) {
 		log.Printf("%d: %s to %s", i+1, pieceString[pieceMoved&0x0f], move.To.String())
 	}*/
 
+}
+
+func TestPawnCaptures(t *testing.T) {
+	position, err := PositionFromFEN("2k5/8/4pp2/1p1pP3/PPpP4/2P5/8/4K3 b - - 0 1")
+	if err != nil {
+		t.Fail()
+	}
+
+	moves := position.generateMoves()
+	//not counting pawn moves yet
+	if len(moves) != 8 {
+		debugPrintf("expected %d moves, found %d\n", 8, len(moves))
+		t.Fail()
+	}
 }
 
 func TestSlidingMoves(t *testing.T) {

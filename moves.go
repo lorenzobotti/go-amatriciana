@@ -32,13 +32,25 @@ type Move struct {
 	From, To Xy
 }
 
+func (m Move) String() string {
+	return m.From.String() + m.To.String()
+}
+
+//Move moves a Move
+func (p Position) Move(move Move) {
+	p.board[move.To] = p.board[move.From]
+	p.board[move.From] = 0x00
+}
+
 //for now it's just a proof of concept, no checking for checks, no pawn moves or promotion, no en passant
 func (p Position) generateMoves() []Move {
 	pawnsDirection := 16
 	pawnsRank := 1
+	var otherColor Piece = Black
 	if p.turn == Black {
 		pawnsDirection = -16
 		pawnsRank = 6
+		otherColor = White
 	}
 	_ = pawnsDirection
 
@@ -48,20 +60,29 @@ func (p Position) generateMoves() []Move {
 			continue
 		}
 
-		//check if the square right in front is occupied or not
-		if (square+pawnsDirection)&0x88 == 0 && p.board[square+pawnsDirection] == 0 {
-			//debugPrintf("pawn can move to %s", Xy(square+pawnsDirection).String())
-			moves = append(moves, Move{Xy(square), Xy(square + pawnsDirection)})
-
-			//if the pawn is in the initial position it can move two squares
-			if (square&0xf0)>>4 == pawnsRank && p.board[square+(pawnsDirection*2)] == 0 {
-				//debugPrintf("pawn can move to %s", Xy(square+(pawnsDirection)*2).String())
-				moves = append(moves, Move{Xy(square), Xy(square + (pawnsDirection * 2))})
-			}
-		}
-
 		if (piece & 0x0f) == Pawn {
-			continue
+			//check if the square right in front is occupied or not
+			if (square+pawnsDirection)&0x88 == 0 && p.board[square+pawnsDirection] == 0 {
+				//debugPrintf("pawn can move to %s", Xy(square+pawnsDirection).String())
+				moves = append(moves, Move{Xy(square), Xy(square + pawnsDirection)})
+
+				//if the pawn is in the initial position it can move two squares
+				if (square&0xf0)>>4 == pawnsRank && p.board[square+(pawnsDirection*2)] == 0 {
+					//debugPrintf("pawn can move to %s", Xy(square+(pawnsDirection)*2).String())
+					moves = append(moves, Move{Xy(square), Xy(square + (pawnsDirection * 2))})
+				}
+			}
+
+			//check for captures
+			if (square+pawnsDirection+1)&0x88 == 0 &&
+				p.board[square+pawnsDirection+1]&0xf0 == otherColor {
+				moves = append(moves, Move{Xy(square), Xy(square + pawnsDirection + 1)})
+			}
+
+			if (square+pawnsDirection-1)&0x88 == 0 &&
+				p.board[square+pawnsDirection-1]&0xf0 == otherColor {
+				moves = append(moves, Move{Xy(square), Xy(square + pawnsDirection - 1)})
+			}
 		}
 
 		if isPieceSliding(piece) {
