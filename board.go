@@ -47,6 +47,15 @@ var pieceString = map[Piece]string{
 	King:   "King",
 }
 
+func (p Piece) otherColor() Piece {
+	actualColor := p & 0xf0
+	if actualColor == White {
+		return Black
+	}
+
+	return White
+}
+
 //Board represents a chessboard using the 0x88 method
 //https://www.chessprogramming.org/0x88
 type Board [128]Piece

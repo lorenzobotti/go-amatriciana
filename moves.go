@@ -40,6 +40,7 @@ func (m Move) String() string {
 func (p Position) Move(move Move) {
 	p.board[move.To] = p.board[move.From]
 	p.board[move.From] = 0x00
+	p.turn = p.turn.otherColor()
 }
 
 //for now it's just a proof of concept, no checking for checks, no pawn moves or promotion, no en passant
