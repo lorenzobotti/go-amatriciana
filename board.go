@@ -60,6 +60,10 @@ type Position struct {
 	moveNumber     int
 	halfMoveNumber int
 	enPassant      Xy
+
+	previousBoards []Board
+	whiteKingPos   int
+	blackKingPos   int
 }
 
 //DefaultFEN is the default FEN
@@ -101,6 +105,12 @@ func BoardFromFEN(fen string) (Board, error) {
 	}
 
 	return output, nil
+}
+
+//NewPosition creates a new Position with the starting pieces
+func NewPosition() Position {
+	position, _ := PositionFromFEN(DefaultFEN)
+	return position
 }
 
 //PositionFromFEN makes a Position from a FEN

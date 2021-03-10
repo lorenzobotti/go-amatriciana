@@ -86,23 +86,23 @@ func (p Position) generateMoves() []Move {
 		}
 
 		if isPieceSliding(piece) {
-			moves = append(moves, p.board.slidingMoves(Xy(square))...)
+			moves = append(moves, p.slidingMoves(Xy(square))...)
 		}
 
 		if isPieceCrawling(piece) {
-			moves = append(moves, p.board.crawlingMoves(Xy(square))...)
+			moves = append(moves, p.crawlingMoves(Xy(square))...)
 		}
 	}
 
 	return moves
 }
 
-func (b Board) movesInDirection(start Xy, dir byte) []Move {
-	startPiece := b[start]
+func (p Position) movesInDirection(start Xy, dir byte) []Move {
+	startPiece := p.board[start]
 	output := make([]Move, 0)
 
 	for index := byte(start) + dir; (index & 0x88) == 0; index += dir {
-		targetSquare := b[index]
+		targetSquare := p.board[index]
 		if (targetSquare & 0xf0) != (startPiece & 0xf0) {
 			output = append(output, Move{start, Xy(index)})
 			if targetSquare&0xf0 != 0 {
@@ -115,8 +115,8 @@ func (b Board) movesInDirection(start Xy, dir byte) []Move {
 	return output
 }
 
-func (b Board) slidingMoves(start Xy) []Move {
-	startPiece := b[start]
+func (p Position) slidingMoves(start Xy) []Move {
+	startPiece := p.board[start]
 	directions, isSliding := slidingPieceDirections[startPiece&0x0f]
 	if !isSliding {
 		return nil
@@ -125,14 +125,14 @@ func (b Board) slidingMoves(start Xy) []Move {
 	output := make([]Move, 0)
 
 	for _, dir := range directions {
-		output = append(output, b.movesInDirection(start, byte(dir))...)
+		output = append(output, p.movesInDirection(start, byte(dir))...)
 	}
 
 	return output
 }
 
-func (b Board) crawlingMoves(start Xy) []Move {
-	directions, isCrawling := crawlingPieceDirections[b[start]&0x0f]
+func (p Position) crawlingMoves(start Xy) []Move {
+	directions, isCrawling := crawlingPieceDirections[p.board[start]&0x0f]
 	if !isCrawling {
 		return nil
 	}
@@ -143,7 +143,7 @@ func (b Board) crawlingMoves(start Xy) []Move {
 			continue
 		}
 
-		if (b[target] & 0xf0) != (b[start] & 0xf0) {
+		if (p.board[target] & 0xf0) != (p.board[start] & 0xf0) {
 			output = append(output, Move{start, Xy(target)})
 		}
 	}

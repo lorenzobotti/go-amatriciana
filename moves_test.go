@@ -52,33 +52,33 @@ func TestPawnCaptures(t *testing.T) {
 }
 
 func TestSlidingMoves(t *testing.T) {
-	b, err := BoardFromFEN(DefaultFEN)
+	pos, err := PositionFromFEN(DefaultFEN)
 	if err != nil {
 		t.Fail()
 	}
 
-	b[0x40|0x04] = White | Rook
-	b[0x30|0x03] = White | Bishop
+	pos.board[0x40|0x04] = White | Rook
+	pos.board[0x30|0x03] = White | Bishop
 
-	moves := b.slidingMoves(0x40 | 0x04)
+	moves := pos.slidingMoves(0x40 | 0x04)
 	if len(moves) != 11 {
 		t.Fail()
 	}
 
-	moves = b.slidingMoves(0x30 | 0x03)
+	moves = pos.slidingMoves(0x30 | 0x03)
 	if len(moves) != 5 {
 		t.Fail()
 	}
 }
 
 func TestCrawlingMoves(t *testing.T) {
-	b, err := BoardFromFEN(DefaultFEN)
+	pos, err := PositionFromFEN(DefaultFEN)
 	if err != nil {
 		t.Fail()
 	}
 
-	b[0x30|0x03] = White | Knight
-	moves := b.crawlingMoves(0x30 | 0x03)
+	pos.board[0x30|0x03] = White | Knight
+	moves := pos.crawlingMoves(0x30 | 0x03)
 	if len(moves) != 6 {
 		t.Fail()
 	}

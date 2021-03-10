@@ -31,12 +31,12 @@ func TestBoardFromFEN(t *testing.T) {
 }
 
 func TestMovesInDirection(t *testing.T) {
-	board, err := BoardFromFEN(DefaultFEN)
+	pos, err := PositionFromFEN(DefaultFEN)
 	if err != nil {
 		t.Fail()
 	}
 
-	moves := board.movesInDirection(16, 16)
+	moves := pos.movesInDirection(16, 16)
 
 	if len(moves) != 5 {
 		t.Fail()
